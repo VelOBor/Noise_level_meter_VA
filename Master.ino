@@ -35,27 +35,36 @@
 // подключаем библиотеку:
 #include <LiquidCrystal.h>
 
-// initialize the library by associating any needed LCD interface pin
-// with the arduino pin number it is connected to
+// инициализируем библиотеку согласно распиновке 
 const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
-int mic_input_level = 0;
-int micpin = A0;
-int green_led = A5;
+
+// указываем прочие пины и инициализируем переменные
+int mic_input_level = 0; //переменная уровня сигнала с микрофона
+int micpin = A0; //пин микрофона, аналоговый выход с модуля микрофона
+
+//выводы на светодиоды
+int green_led = A5; 
 int yellow_led = A4;
 int red_led = A3;
+
+//входы кнопок
 int button1 = 8;
 int button2 = 7;
 int button3 = 6;
 
+//переменные значения кнопок (1 = НЕ нажата, 0 = нажата)
 int but1state = 0;
 int but2state = 0;
 int but3state = 0;
 
+//разовое выполнение при запуске МК
 void setup() {
-  // set up the LCD's number of columns and rows:
+// Указываем библиотеке сколько столбцов, строк на ЖК-дисплее:
   lcd.begin(20, 4);
+//запускаем последовательный порт и указываем скорость
   Serial.begin(9600);
+// указываем режимы работы пинов ввода/вывода
 pinMode(micpin, INPUT);
 pinMode(green_led, OUTPUT);
 pinMode(yellow_led, OUTPUT);
@@ -66,40 +75,49 @@ pinMode(button2, INPUT_PULLUP);
 pinMode(button3, INPUT_PULLUP);
 
 
-  // Print a message to the LCD.
+  // Выводим сообщение на ЖКД.
   lcd.print("Raw data from mic");
 }
 
+
+//основная часть программы
 void loop() {
+//читаем статус кнопок в переменные
   but1state = digitalRead(button1);
   but2state = digitalRead(button2);
   but3state = digitalRead(button3);
+//каждый цикл программы начинаем с выключенных светодиодов
 digitalWrite(green_led, LOW);
 digitalWrite(yellow_led, LOW);
 digitalWrite(red_led, LOW);
-  mic_input_level = analogRead(micpin);
+//читаем уровень сигнала с микрофона
+mic_input_level = analogRead(micpin);
+//если уровень сигнала выше чем..., зажигаем нужный светодиод
 if (mic_input_level > 200) {digitalWrite(green_led, HIGH);}
 if (mic_input_level > 300) {digitalWrite(yellow_led, HIGH);}
 if (mic_input_level > 400) {digitalWrite(red_led, HIGH);}
-
-  // put your main code here, to run repeatedly:
-
+//выводим значение кнопок (проверка их работы) и значенте уровня сигнала микрофона
+//на последовательный порт на комп
 Serial.print(but1state);
 Serial.print(but2state);
 Serial.print(but3state);
 Serial.println(mic_input_level);
-  // set the cursor to column 0, line 1
-  // (note: line 1 is the second row, since counting begins with 0):
+
+//выставляем курсор на столбец 0, строчку 1 ЖКД
+//(примечание: строчка 1 на самом деле вторая строка, ибо отсчёт начинаем с нуля):
   lcd.setCursor(0, 1);
+//выводим на ЖКД уровень сигнала микрофона
   lcd.print(mic_input_level);
+//сдвигаем курсор
   lcd.setCursor(0, 2);
+//и выводим сообщение
   lcd.print("Buttons=");
+//снова сдвигаем курсор
   lcd.setCursor(10,2);
+//и выводим значение переменных, сдвигаем курсор, следующая переменная и т. д.)
   lcd.print(but1state);
   lcd.setCursor(12,2);
   lcd.print(but2state);
   lcd.setCursor(14, 2);
   lcd.print(but3state);
-  // print the number of seconds since reset:
-  //lcd.print(millis() / 1000);
 }
